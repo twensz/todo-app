@@ -13,11 +13,11 @@ const api = axios.create({
 
 const request = async <T>(url: string, config: AxiosRequestConfig): Promise<ApiResponse<T>> => {
   try {
-    const response: AxiosResponse<T> = await api.request({ url, ...config });
+    const response: AxiosResponse<{ data: T }> = await api.request({ url, ...config });
 
     return {
       success: true,
-      data: response.data,
+      data: response.data.data,
     };
   } catch (error) {
     let message = "Network Error";
