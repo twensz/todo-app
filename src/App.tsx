@@ -4,7 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import TodoList from './components/TodoList';
 import { Input } from './components/ui/input';
 import { TodoService } from './services/todo.services';
-import { Todo, UpdateTodoBody } from './types/Todo.type';
+import { Todo, UpdateTodoBody } from './types/todo.type';
 
 function App() {
   const [ongoingTodos, setOngoingTodos] = useState<Todo[]>([]);
@@ -14,22 +14,19 @@ function App() {
   const [selectedTodoId, setSelectedTodoId] = useState<string>("");
 
   const fetchTodos = async () => {
-    try {
-      const response = await fetch("/api/todos", {
-        method: "GET",
-      });
+    const response = await TodoService.getTodoList();
 
-      if (!response.ok) {
-        console.error("❗ Server returned error:", response.status);
-        return;
-      }
-
-      const json = await response.json();
-      setOngoingTodos(json.filter((todo) => !todo.completed).sort((a, b) => a.order - b.order));
-      setCompletedTodos(json.filter((todo) => todo.completed).sort((a, b) => a.order - b.order));
-    } catch (error) {
-      console.error("🔌 Network error:", error);
+    if (!response.success) {
+      console.error(response.error);
+      toast.error(response.error);
+      return;
     }
+
+    const todoList: Todo[] = response.data;
+    const sorted = todoList.sort((a, b) => a.order - b.order);
+
+    setOngoingTodos(sorted.filter((todo) => !todo.completed));
+    setCompletedTodos(sorted.filter((todo) => todo.completed));
   };
 
   const addTodos = async () => {
@@ -60,26 +57,13 @@ function App() {
   };
 
   const toggleTodo = async (id: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          _id: id,
-          completed: !currentStatus,
-        }),
-      });
+    const res = await TodoService.toggleTodo(id, currentStatus);
 
-      if (!response.ok) {
-        console.error("❗ Server returned error:", response.status);
-        return;
-      }
-
+    if (res.success) {
       fetchTodos();
-    } catch (error) {
-      console.error("🔌 Network error:", error);
+    } else {
+      console.error(res.error);
+      toast.error(res.error);
     }
   };
 

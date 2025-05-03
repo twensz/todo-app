@@ -1,20 +1,20 @@
 import { Check, Grip, Trash } from 'lucide-react';
 import { HTMLAttributes } from 'react';
 
-import { UpdateTodoBody } from '@/types/Todo.type';
+import { UpdateTodoBody } from '@/types/todo.type';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import { Input } from './ui/input';
 
-type TodoItem = {
+type Todo = {
   _id: string;
   title: string;
   completed: boolean;
 };
 
 type Props = {
-  todo: TodoItem;
+  todo: Todo;
   updateTodo: (id: string, body: UpdateTodoBody) => void;
   toggleTodo: (id: string, status: boolean) => void;
   deleteTodo: (id: string) => void;
@@ -52,7 +52,7 @@ const SortableTodoItem = ({ todo, updateTodo, toggleTodo, deleteTodo, selected, 
       </div>
 
       <div
-        className={`grid grid-cols-[auto_1fr_auto] items-center gap-1 border-b-1 border-gray-200 px-4 py-1 transition-transform duration-200 hover:bg-gray-50 ${
+        className={`grid grid-cols-[auto_1fr_auto] items-center gap-1 border-b-1 border-gray-200 px-4 py-1 not-last:transition-transform duration-200 hover:bg-gray-50 ${
           selected && "bg-gray-100 hover:bg-gray-100"
         }`}>
         <div

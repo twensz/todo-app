@@ -1,92 +1,70 @@
-import { TodoBody, UpdateTodoBody } from '@/types/Todo.type';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+
+import { Todo, UpdateTodoBody } from '@/types/todo.type';
 
 type ApiResponse<T> = { success: true; data: T } | { success: false; error: string };
 
+const api = axios.create({
+  baseURL: "/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+const request = async <T>(url: string, config: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  try {
+    const response: AxiosResponse<T> = await api.request({ url, ...config });
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    let message = "Network Error";
+
+    if (axios.isAxiosError(error)) {
+      if (error.response?.data && typeof error.response.data === "object" && "message" in error.response.data) {
+        message = error.response.data.message;
+      } else if (error.message) {
+        message = error.message;
+      }
+    }
+
+    return { success: false, error: message };
+  }
+};
+
 export const TodoService = {
-  addTodo: async (title: string): Promise<ApiResponse<null>> => {
-    try {
-      const res = await fetch("/api/todos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-        }),
-      });
+  getTodoList: (): Promise<ApiResponse<Todo[]>> =>
+    request<Todo[]>("/todos", {
+      method: "GET",
+    }),
 
-      if (!res.ok) {
-        return { success: false, error: `Server error: ${res.status}` };
-      }
+  addTodo: (title: string): Promise<ApiResponse<null>> =>
+    request<null>("/todos", {
+      method: "POST",
+      data: {
+        title,
+      },
+    }),
 
-      return {
-        success: true,
-        data: null,
-      };
-    } catch (error) {
-      return { success: false, error: error.message || "Network error" };
-    }
-  },
+  updateTodo: (id: string, body: UpdateTodoBody): Promise<ApiResponse<null>> =>
+    request<null>(`/todos/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(body),
+    }),
 
-  updateTodo: async (id: string, body: UpdateTodoBody): Promise<ApiResponse<null>> => {
-    try {
-      const res = await fetch(`/api/todos/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+  toggleTodo: (id: string, currentStatus: boolean): Promise<ApiResponse<null>> =>
+    request<null>(`/todos/${id}`, {
+      method: "PATCH",
+      data: { completed: !currentStatus },
+    }),
 
-      if (!res.ok) {
-        return { success: false, error: `Server error: ${res.status}` };
-      }
-
-      return {
-        success: true,
-        data: null,
-      };
-    } catch (error) {
-      return { success: false, error: error.message || "Network error" };
-    }
-  },
-
-  toggleTodo: async (id: string, currentStatus: boolean) => {
-    try {
-      const res = await fetch(`/api/todos/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          _id: id,
-          completed: !currentStatus,
-        }),
-      });
-
-      if (!res.ok) {
-        console.error("❗ Server returned error:", res.status);
-        return;
-      }
-    } catch (error) {
-      console.error("🔌 Network error:", error);
-      return null;
-    }
-  },
-
-  deleteTodo: async (id: string) => {
-    try {
-      const res = await fetch(`/api/todos/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        console.error("❗ Server returned error:", res.status);
-        return;
-      }
-    } catch (error) {
-      console.error("🔌 Network error:", error);
-      return null;
-    }
-  },
+  deleteTodo: (id: string): Promise<ApiResponse<null>> =>
+    request<null>(`/todos/${id}`, {
+      method: "DELETE",
+    }),
 };

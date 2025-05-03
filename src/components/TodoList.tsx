@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import { UpdateTodoBody } from '@/types/Todo.type';
+import { Todo, UpdateTodoBody } from '@/types/todo.type';
 import {
-    closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors
+    closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors
 } from '@dnd-kit/core';
 import {
     arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy
@@ -10,19 +10,13 @@ import {
 
 import SortableTodoItem from './SortableTodoItem';
 
-type TodoItem = {
-  _id: string;
-  title: string;
-  completed: boolean;
-};
-
 type TodoProps = {
-  todos: TodoItem[];
+  todos: Todo[];
   toggleTodo: (id: string, currentStatus: boolean) => void;
   updateTodo: (id: string, body: UpdateTodoBody) => void;
   deleteTodo: (id: string) => void;
-  setTodos: React.Dispatch<React.SetStateAction<TodoItem[]>>;
-  updateOrderTodos: (todos: TodoItem[]) => void;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  updateOrderTodos: (todos: Todo[]) => void;
   selectedTodoId: string;
   setSelectedTodoId: React.Dispatch<React.SetStateAction<string>>;
   listId: string;
@@ -48,7 +42,7 @@ const TodoList: React.FC<TodoProps> = ({
     })
   );
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
