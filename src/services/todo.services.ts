@@ -67,4 +67,13 @@ export const TodoService = {
     request<null>(`/todos/${id}`, {
       method: "DELETE",
     }),
+
+  reorderTodoList: (updatedOrder: UpdateTodoBody[]): Promise<ApiResponse<null>> =>
+    request<null>("/todos/update-order", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({ updatedOrder }),
+    }),
 };

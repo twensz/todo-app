@@ -1,24 +1,31 @@
-import { useEffect, useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
-import TodoList from './components/TodoList';
-import { Input } from './components/ui/input';
-import { TodoService } from './services/todo.services';
-import { Todo, UpdateTodoBody } from './types/todo.type';
+import noDataImage from "@/assets/images/undraw_no-data.svg";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+
+import TodoList from "./components/TodoList";
+import { Input } from "./components/ui/input";
+import { TodoService } from "./services/todo.services";
+import { Todo, UpdateTodoBody } from "./types/todo.type";
 
 function App() {
   const [ongoingTodos, setOngoingTodos] = useState<Todo[]>([]);
   const [completedTodos, setCompletedTodos] = useState<Todo[]>([]);
   const [inputTitle, setInputTitle] = useState<string>("");
   const [addingTodos, setAddingTodos] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedTodoId, setSelectedTodoId] = useState<string>("");
 
   const fetchTodos = async () => {
+    setLoading(true);
+
     const response = await TodoService.getTodoList();
 
     if (!response.success) {
       console.error(response.error);
       toast.error(response.error);
+      setLoading(false);
       return;
     }
 
@@ -27,9 +34,12 @@ function App() {
 
     setOngoingTodos(sorted.filter((todo) => !todo.completed));
     setCompletedTodos(sorted.filter((todo) => todo.completed));
+    setLoading(false);
   };
 
   const addTodos = async () => {
+    if (!inputTitle) return;
+
     setAddingTodos(true);
 
     const res = await TodoService.addTodo(inputTitle);
@@ -68,47 +78,29 @@ function App() {
   };
 
   const deleteTodo = async (id: string) => {
-    try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: "DELETE",
-      });
+    const res = await TodoService.deleteTodo(id);
 
-      if (!response.ok) {
-        console.error("❗ Server returned error:", response.status);
-        return;
-      }
-
+    if (res.success) {
       fetchTodos();
-    } catch (error) {
-      console.error("🔌 Network error:", error);
+    } else {
+      console.error(res.error);
+      toast.error(res.error);
     }
   };
 
   const updateOrderTodos = async (updatedTodoList: Todo[]) => {
-    try {
-      const updatedOrder = updatedTodoList.map((todo, index) => ({
-        _id: todo._id, // Keep the _id
-        order: index + 1, // Assign order based on the new position
-      }));
+    const updatedOrder = updatedTodoList.map((todo, index) => ({
+      _id: todo._id,
+      order: index + 1,
+    }));
 
-      const response = await fetch(`/api/todos/update-order`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          updatedOrder,
-        }),
-      });
+    const res = await TodoService.reorderTodoList(updatedOrder);
 
-      if (!response.ok) {
-        console.error("❗ Server returned error:", response.status);
-        return;
-      }
-
+    if (res.success) {
       fetchTodos();
-    } catch (error) {
-      console.error("🔌 Network error:", error);
+    } else {
+      console.error(res.error);
+      toast.error(res.error);
     }
   };
 
@@ -116,40 +108,19 @@ function App() {
     fetchTodos();
   }, []);
 
+  if (loading)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="w-[600px]">
+          <DotLottieReact src="assets/loading.lottie" loop autoplay />
+        </div>
+      </div>
+    );
+
   return (
     <>
       <div className="p-10">
         <div className="grid gap-5">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-md font-bold">Ongoing Task</h1>
-            <TodoList
-              listId="ongoing"
-              todos={ongoingTodos}
-              toggleTodo={toggleTodo}
-              deleteTodo={deleteTodo}
-              updateOrderTodos={updateOrderTodos}
-              updateTodo={updateTodo}
-              selectedTodoId={selectedTodoId}
-              setSelectedTodoId={setSelectedTodoId}
-              setTodos={setOngoingTodos}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <h1 className="text-md font-bold">Completed Task</h1>
-            <TodoList
-              listId="completed"
-              todos={completedTodos}
-              toggleTodo={toggleTodo}
-              deleteTodo={deleteTodo}
-              updateOrderTodos={updateOrderTodos}
-              updateTodo={updateTodo}
-              selectedTodoId={selectedTodoId}
-              setSelectedTodoId={setSelectedTodoId}
-              setTodos={setCompletedTodos}
-            />
-          </div>
-
           <div className="flex gap-3">
             <Input
               type="text"
@@ -159,6 +130,50 @@ function App() {
             />
             <button onClick={addTodos}>{addingTodos ? "Adding..." : "Submit"}</button>
           </div>
+
+          {ongoingTodos.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h1 className="text-md font-bold">Ongoing Task</h1>
+              <TodoList
+                listId="ongoing"
+                todos={ongoingTodos}
+                toggleTodo={toggleTodo}
+                deleteTodo={deleteTodo}
+                updateOrderTodos={updateOrderTodos}
+                updateTodo={updateTodo}
+                selectedTodoId={selectedTodoId}
+                setSelectedTodoId={setSelectedTodoId}
+                setTodos={setOngoingTodos}
+              />
+            </div>
+          )}
+
+          {completedTodos.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h1 className="text-md font-bold">Completed Task</h1>
+              <TodoList
+                listId="completed"
+                todos={completedTodos}
+                toggleTodo={toggleTodo}
+                deleteTodo={deleteTodo}
+                updateOrderTodos={updateOrderTodos}
+                updateTodo={updateTodo}
+                selectedTodoId={selectedTodoId}
+                setSelectedTodoId={setSelectedTodoId}
+                setTodos={setCompletedTodos}
+              />
+            </div>
+          )}
+
+          {ongoingTodos.length === 0 && completedTodos.length === 0 && (
+            <div className="flex flex-col gap-6 justify-center items-center mt-20 text-gray-600">
+              <img className="max-w-[120px]" src={noDataImage} alt="No Data" />
+              <div className="flex flex-col gap-2 text-center">
+                <span className="text-md font-bold">No Task</span>
+                <span className="text-sm font-light">Add task on the input above</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

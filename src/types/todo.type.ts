@@ -6,6 +6,7 @@ export type Todo = {
 };
 
 export type UpdateTodoBody = {
+  _id?: string;
   title?: string;
   completed?: boolean;
 };
