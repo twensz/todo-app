@@ -1,11 +1,11 @@
-import { Check, Grip, Trash } from 'lucide-react';
-import { HTMLAttributes } from 'react';
+import { Check, Grip, Trash } from "lucide-react";
+import { HTMLAttributes } from "react";
 
-import { UpdateTodoBody } from '@/types/todo.type';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { UpdateTodoBody } from "@/types/todo.type";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-import { Input } from './ui/input';
+import { Input } from "./ui/input";
 
 type Todo = {
   _id: string;
@@ -73,6 +73,7 @@ const SortableTodoItem = ({ todo, updateTodo, toggleTodo, deleteTodo, selected, 
         <Input
           defaultValue={todo.title}
           className={`${todo.completed ? "text-gray-600" : ""} border-none focus-visible:ring-0 shadow-none`}
+          placeholder="No Title"
           onBlur={(e) => handleOnBlur(e.target.value)}
         />
         <button
