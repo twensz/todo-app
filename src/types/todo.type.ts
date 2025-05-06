@@ -4,6 +4,7 @@ export type Todo = {
   completed: boolean;
   description: string;
   order: number;
+  dueDate: string;
 };
 
 export type UpdateTodoBody = {
@@ -11,4 +12,5 @@ export type UpdateTodoBody = {
   title?: string;
   completed?: boolean;
   description?: string;
+  dueDate?: Date;
 };

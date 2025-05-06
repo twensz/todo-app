@@ -11,6 +11,7 @@ import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
 import TodoToggle from "./TodoToggle";
+import { DatePicker } from "./ui/date-picker";
 import { Input } from "./ui/input";
 
 type TodoDetailProps = {
@@ -24,6 +25,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo }) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const [initializeEditorContent, setInitializeEditorContent] = useState(true);
+  const [date, setDate] = useState<Date>();
 
   const extensions = [
     StarterKit,
@@ -33,6 +35,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo }) => {
       showOnlyCurrent: false,
     }),
   ];
+
   const editor = useEditor({
     extensions,
     content: description,
@@ -44,6 +47,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo }) => {
       setTitle(todo.title);
       setDescription(todo.description);
       setLoading(false);
+      setDate(todo.dueDate ? new Date(todo.dueDate) : undefined);
     }
   }, [todo]);
 
@@ -89,8 +93,9 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo }) => {
     <>
       <div className="flex flex-col gap-4">
         {/* Header */}
-        <div className="flex">
+        <div className="flex gap-2 items-center">
           <TodoToggle key={todo._id} todo={todo} />
+          <DatePicker todo={todo} date={date} setDate={setDate} />
         </div>
 
         <Input

@@ -121,11 +121,6 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    if (!selectedTodo) return;
-    selectTodo(selectedTodo._id);
-  }, [todoList]);
-
-  useEffect(() => {
     setLoading(true);
     (async () => await fetchTodos())();
     setLoading(false);

@@ -1,24 +1,20 @@
-import { Check, Grip, Trash } from "lucide-react";
+import { Grip, Trash } from "lucide-react";
 import { HTMLAttributes, useMemo } from "react";
 
 import { useTodoContext } from "@/context/TodoContext";
+import { Todo } from "@/types/todo.type";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import TodoToggle from "./TodoToggle";
 import { Input } from "./ui/input";
-
-type Todo = {
-  _id: string;
-  title: string;
-  completed: boolean;
-};
 
 type Props = {
   todo: Todo;
 } & HTMLAttributes<HTMLDivElement>;
 
 const SortableTodoItem = ({ todo, ...rest }: Props) => {
-  const { updateTodo, toggleTodo, deleteTodo, selectedTodo } = useTodoContext();
+  const { updateTodo, deleteTodo, selectedTodo } = useTodoContext();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: todo._id });
 
   const isSelected = useMemo(() => todo._id === selectedTodo?._id, [todo._id, selectedTodo?._id]);
@@ -54,20 +50,7 @@ const SortableTodoItem = ({ todo, ...rest }: Props) => {
         className={`grid grid-cols-[auto_1fr_auto] items-center gap-1 border-b-1 border-gray-200 px-4 py-1 not-last:transition-transform duration-200 hover:bg-gray-50 ${
           isSelected && "bg-gray-100 hover:bg-gray-100"
         }`}>
-        <div
-          className={`${
-            todo.completed ? "bg-gray-200 border-gray-300" : "bg-white border-gray-500"
-          } border rounded-sm group p-[1px] relative min-w-4 min-h-4 flex items-center justify-center`}>
-          <input
-            type="checkbox"
-            className="absolute opacity-0 cursor-pointer z-10 w-full h-full"
-            onChange={() => toggleTodo(todo._id, todo.completed)}
-          />
-          <Check
-            size={14}
-            className={`${todo.completed ? "opacity-100" : "opacity-0 group-hover:opacity-40"} duration-150`}
-          />
-        </div>
+        <TodoToggle key={todo._id} todo={todo} />
 
         <Input
           defaultValue={todo.title}
