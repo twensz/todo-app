@@ -1,38 +1,34 @@
-import React from 'react';
+import React from "react";
 
-import { Todo, UpdateTodoBody } from '@/types/todo.type';
+import { useTodoContext } from "@/context/TodoContext";
+import { Todo } from "@/types/todo.type";
 import {
-    closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors
-} from '@dnd-kit/core';
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import {
-    arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy
-} from '@dnd-kit/sortable';
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
-import SortableTodoItem from './SortableTodoItem';
+import SortableTodoItem from "./SortableTodoItem";
 
 type TodoProps = {
   todos: Todo[];
-  toggleTodo: (id: string, currentStatus: boolean) => void;
-  updateTodo: (id: string, body: UpdateTodoBody) => void;
-  deleteTodo: (id: string) => void;
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-  updateOrderTodos: (todos: Todo[]) => void;
-  selectedTodoId: string;
-  setSelectedTodoId: React.Dispatch<React.SetStateAction<string>>;
   listId: string;
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 };
 
-const TodoList: React.FC<TodoProps> = ({
-  todos,
-  toggleTodo,
-  updateTodo,
-  deleteTodo,
-  updateOrderTodos,
-  setTodos,
-  selectedTodoId,
-  setSelectedTodoId,
-  listId,
-}) => {
+const TodoList: React.FC<TodoProps> = ({ todos, setTodos, listId }) => {
+  const { updateOrderTodos, selectTodo } = useTodoContext();
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -64,13 +60,9 @@ const TodoList: React.FC<TodoProps> = ({
               <SortableTodoItem
                 key={todo._id}
                 todo={todo}
-                toggleTodo={toggleTodo}
-                deleteTodo={deleteTodo}
-                updateTodo={updateTodo}
-                selected={selectedTodoId === todo._id}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedTodoId(todo._id);
+                  selectTodo(todo._id);
                 }}
               />
             ))}

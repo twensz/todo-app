@@ -1,7 +1,7 @@
 import { Check, Grip, Trash } from "lucide-react";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useMemo } from "react";
 
-import { UpdateTodoBody } from "@/types/todo.type";
+import { useTodoContext } from "@/context/TodoContext";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -15,14 +15,13 @@ type Todo = {
 
 type Props = {
   todo: Todo;
-  updateTodo: (id: string, body: UpdateTodoBody) => void;
-  toggleTodo: (id: string, status: boolean) => void;
-  deleteTodo: (id: string) => void;
-  selected: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
-const SortableTodoItem = ({ todo, updateTodo, toggleTodo, deleteTodo, selected, ...rest }: Props) => {
+const SortableTodoItem = ({ todo, ...rest }: Props) => {
+  const { updateTodo, toggleTodo, deleteTodo, selectedTodo } = useTodoContext();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: todo._id });
+
+  const isSelected = useMemo(() => todo._id === selectedTodo?._id, [todo._id, selectedTodo?._id]);
 
   const handleOnBlur = (value: string) => {
     if (value === todo.title) return;
@@ -53,7 +52,7 @@ const SortableTodoItem = ({ todo, updateTodo, toggleTodo, deleteTodo, selected, 
 
       <div
         className={`grid grid-cols-[auto_1fr_auto] items-center gap-1 border-b-1 border-gray-200 px-4 py-1 not-last:transition-transform duration-200 hover:bg-gray-50 ${
-          selected && "bg-gray-100 hover:bg-gray-100"
+          isSelected && "bg-gray-100 hover:bg-gray-100"
         }`}>
         <div
           className={`${

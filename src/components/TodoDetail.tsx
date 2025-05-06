@@ -3,20 +3,23 @@ import "@/components/TodoDetail.css";
 import { Bold, Italic, Underline } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { useTodoContext } from "@/context/TodoContext";
 import { Todo, UpdateTodoBody } from "@/types/todo.type";
 import { ToggleGroup, ToggleGroupItem } from "@radix-ui/react-toggle-group";
 import Placeholder from "@tiptap/extension-placeholder";
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
+import TodoToggle from "./TodoToggle";
 import { Input } from "./ui/input";
 
 type TodoDetailProps = {
   todo: Todo | undefined;
-  updateTodo: (id: string, body: UpdateTodoBody) => void;
 };
 
-const TodoDetail: React.FC<TodoDetailProps> = ({ todo, updateTodo }) => {
+const TodoDetail: React.FC<TodoDetailProps> = ({ todo }) => {
+  const { updateTodo } = useTodoContext();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,8 +48,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo, updateTodo }) => {
   }, [todo]);
 
   useEffect(() => {
-    if (editor && description && !initializeEditorContent) {
-      console.log("edit");
+    if (editor && description && initializeEditorContent) {
       editor.commands.setContent(description);
       setInitializeEditorContent(false);
     }
@@ -81,14 +83,20 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo, updateTodo }) => {
   };
 
   if (loading) return null;
+  if (!todo) return null;
 
   return (
     <>
       <div className="flex flex-col gap-4">
+        {/* Header */}
+        <div className="flex">
+          <TodoToggle key={todo._id} todo={todo} />
+        </div>
+
         <Input
           defaultValue={title}
           className={`${
-            todo?.completed ? "text-gray-600" : ""
+            todo.completed ? "text-gray-600" : ""
           } border-none focus-visible:ring-0 shadow-none !text-xl !font-bold p-0 rounded-none`}
           placeholder="What you like to do?"
           onBlur={() => handleOnBlur({ title })}
@@ -110,6 +118,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo, updateTodo }) => {
                   onClick={() => editor?.chain().focus().toggleBold().run()}>
                   <Bold className="h-4 w-4" />
                 </ToggleGroupItem>
+
                 <ToggleGroupItem
                   value="italic"
                   aria-label="Toggle italic"
@@ -117,6 +126,7 @@ const TodoDetail: React.FC<TodoDetailProps> = ({ todo, updateTodo }) => {
                   onClick={() => editor?.chain().focus().toggleItalic().run()}>
                   <Italic className="h-4 w-4" />
                 </ToggleGroupItem>
+
                 <ToggleGroupItem
                   value="strikethrough"
                   className={`${editor?.isActive("strike") ? "text-blue-600" : ""} cursor-pointer`}
